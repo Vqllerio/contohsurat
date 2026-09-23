@@ -22,8 +22,8 @@
         ]
       },
       {
-        id: "valen",
-        name: "Valen",
+        id: "valen1",
+        name: "Valen1",
         title: "Untuk Sayangku Valen",
         code: "SIL99",              // ⬅️ GANTI kode rahasia ini, jangan disebar sembarangan
         accent: "#ff527b",
@@ -41,8 +41,8 @@
         ]
       },
       {
-        id: "valen",
-        name: "Valen",
+        id: "valen2",
+        name: "Valen2",
         title: "Untuk Sayangku Valen",
         code: "SIL99",              // ⬅️ GANTI kode rahasia ini, jangan disebar sembarangan
         accent: "#ff527b",
@@ -60,8 +60,8 @@
         ]
       },
       {
-        id: "valen",
-        name: "Valen",
+        id: "valen3",
+        name: "Valen3",
         title: "Untuk Sayangku Valen",
         code: "SIL99",              // ⬅️ GANTI kode rahasia ini, jangan disebar sembarangan
         accent: "#ff527b",
@@ -79,8 +79,8 @@
         ]
       },
       {
-        id: "valen",
-        name: "Valen",
+        id: "valen4",
+        name: "Valen4",
         title: "Untuk Sayangku Valen",
         code: "SIL99",              // ⬅️ GANTI kode rahasia ini, jangan disebar sembarangan
         accent: "#ff527b",
@@ -98,8 +98,8 @@
         ]
       },
       {
-        id: "valen",
-        name: "Valen",
+        id: "valen5",
+        name: "Valen5",
         title: "Untuk Sayangku Valen",
         code: "SIL99",              // ⬅️ GANTI kode rahasia ini, jangan disebar sembarangan
         accent: "#ff527b",
@@ -117,8 +117,8 @@
         ]
       },
       {
-        id: "valen",
-        name: "Valen",
+        id: "valen6",
+        name: "Valen6",
         title: "Untuk Sayangku Valen",
         code: "SIL99",              // ⬅️ GANTI kode rahasia ini, jangan disebar sembarangan
         accent: "#ff527b",
@@ -136,8 +136,8 @@
         ]
       },
       {
-        id: "valen",
-        name: "Valen",
+        id: "valen7",
+        name: "Valen7",
         title: "Untuk Sayangku Valen",
         code: "SIL99",              // ⬅️ GANTI kode rahasia ini, jangan disebar sembarangan
         accent: "#ff527b",
@@ -155,8 +155,8 @@
         ]
       },
       {
-        id: "valen",
-        name: "Valen",
+        id: "valen8",
+        name: "Valen8",
         title: "Untuk Sayangku Valen",
         code: "SIL99",              // ⬅️ GANTI kode rahasia ini, jangan disebar sembarangan
         accent: "#ff527b",
@@ -174,8 +174,8 @@
         ]
       },
       {
-        id: "valen",
-        name: "Valen",
+        id: "valen9",
+        name: "Valen9",
         title: "Untuk Sayangku Valen",
         code: "SIL99",              // ⬅️ GANTI kode rahasia ini, jangan disebar sembarangan
         accent: "#ff527b",
@@ -193,8 +193,8 @@
         ]
       },
       {
-        id: "valen",
-        name: "Valen",
+        id: "valen10",
+        name: "Valen10",
         title: "Untuk Sayangku Valen",
         code: "SIL99",              // ⬅️ GANTI kode rahasia ini, jangan disebar sembarangan
         accent: "#ff527b",
@@ -212,8 +212,8 @@
         ]
       },
       {
-        id: "valen",
-        name: "Valen",
+        id: "valen11",
+        name: "Valen11",
         title: "Untuk Sayangku Valen",
         code: "SIL99",              // ⬅️ GANTI kode rahasia ini, jangan disebar sembarangan
         accent: "#ff527b",
@@ -231,8 +231,8 @@
         ]
       },
       {
-        id: "valen",
-        name: "Valen",
+        id: "valen12",
+        name: "Valen12",
         title: "Untuk Sayangku Valen",
         code: "SIL99",              // ⬅️ GANTI kode rahasia ini, jangan disebar sembarangan
         accent: "#ff527b",
@@ -250,8 +250,8 @@
         ]
       },
       {
-        id: "valen",
-        name: "Valen",
+        id: "valen13",
+        name: "Valen13",
         title: "Untuk Sayangku Valen",
         code: "SIL99",              // ⬅️ GANTI kode rahasia ini, jangan disebar sembarangan
         accent: "#ff527b",
@@ -269,8 +269,8 @@
         ]
       },
       {
-        id: "valen",
-        name: "Valen",
+        id: "valen14",
+        name: "Valen14",
         title: "Untuk Sayangku Valen",
         code: "SIL99",              // ⬅️ GANTI kode rahasia ini, jangan disebar sembarangan
         accent: "#ff527b",
@@ -288,8 +288,8 @@
         ]
       },
       {
-        id: "valen",
-        name: "Valen",
+        id: "valen15",
+        name: "Valen15",
         title: "Untuk Sayangku Valen",
         code: "SIL99",              // ⬅️ GANTI kode rahasia ini, jangan disebar sembarangan
         accent: "#ff527b",
@@ -307,8 +307,8 @@
         ]
       },
       {
-        id: "valen",
-        name: "Valen",
+        id: "valen16",
+        name: "Valen16",
         title: "Untuk Sayangku Valen",
         code: "SIL99",              // ⬅️ GANTI kode rahasia ini, jangan disebar sembarangan
         accent: "#ff527b",
@@ -326,8 +326,8 @@
         ]
       },
       {
-        id: "valen",
-        name: "Valen",
+        id: "valen17",
+        name: "Valen17",
         title: "Untuk Sayangku Valen",
         code: "SIL99",              // ⬅️ GANTI kode rahasia ini, jangan disebar sembarangan
         accent: "#ff527b",
