@@ -47,7 +47,7 @@ body {
     justify-content: center;
 }
 
-/* ---------------- HUB (18 ENVELOPES) ---------------- */
+/* ---------------- HUB (SINGLE ENVELOPE) ---------------- */
 #hubView { width: 100%; display: none; }
 
 .hub-header { text-align: center; margin: 30px 0 35px; }
@@ -59,45 +59,47 @@ body {
 .hub-header p { color: #888; margin-top: 8px; font-size: 15px; }
 
 .hub-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(115px, 1fr));
-    gap: 26px 18px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     padding-bottom: 40px;
+    min-height: 380px;
 }
 
 .hub-item { text-align: center; cursor: pointer; }
 
 .mini-env {
-    width: 110px; height: 78px;
+    width: 240px; height: 170px;
     background-color: var(--envelope-bg);
-    border-radius: 0 0 8px 8px;
+    border-radius: 0 0 14px 14px;
     position: relative;
     margin: 0 auto;
     transition: transform 0.3s ease;
-    box-shadow: 0 6px 14px rgba(255,133,162,0.3);
+    box-shadow: 0 12px 28px rgba(171, 71, 188, 0.35);
 }
-.hub-item:hover .mini-env { transform: scale(1.1) rotate(-3deg); }
+.hub-item:hover .mini-env { transform: scale(1.08) rotate(-3deg); }
 
 .mini-env .mini-flap {
     position: absolute; top: 0; left: 0;
     width: 0; height: 0;
-    border-left: 55px solid transparent;
-    border-right: 55px solid transparent;
-    border-top: 44px solid var(--flap-color);
+    border-left: 120px solid transparent;
+    border-right: 120px solid transparent;
+    border-top: 96px solid var(--flap-color);
 }
 .mini-seal {
-    position: absolute; top: 30px; left: 50%;
+    position: absolute; top: 66px; left: 50%;
     transform: translateX(-50%);
-    width: 28px; height: 28px;
+    width: 56px; height: 56px;
     background: var(--primary-dark);
-    border: 2px solid #fff;
+    border: 3px solid #fff;
     border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
-    color: #fff; font-size: 13px; font-weight: bold;
+    color: #fff; font-size: 22px; font-weight: bold;
     z-index: 2;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
 }
-.mini-name { margin-top: 10px; font-weight: 600; color: var(--primary-dark); font-size: 14px; }
-.mini-status { font-size: 11px; color: #aaa; margin-top: 2px; }
+.mini-name { margin-top: 18px; font-weight: 600; color: var(--primary-dark); font-size: 22px; }
+.mini-status { font-size: 14px; color: #aaa; margin-top: 6px; }
 .mini-status.opened { color: #2ecc71; }
 
 /* ---------------- CODE MODAL ---------------- */
