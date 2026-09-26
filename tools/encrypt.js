@@ -12,8 +12,14 @@ const KEY_LEN = 32;         // AES-256
 const SALT_LEN = 16;
 const IV_LEN = 12;          // GCM standard
 
+// ⬇️ MUST match js/crypto.js — trim + lowercase for case-insensitive codes
+function normalizeCode(code) {
+  return String(code || '').trim().toLowerCase();
+}
+
 function deriveKey(code, salt) {
-  return crypto.pbkdf2Sync(code, salt, ITERATIONS, KEY_LEN, 'sha256');
+  const normalized = normalizeCode(code);
+  return crypto.pbkdf2Sync(normalized, salt, ITERATIONS, KEY_LEN, 'sha256');
 }
 
 function encryptPayload(payload, code) {
@@ -56,7 +62,6 @@ function buildPublicData(people) {
       accent: p.accent,
       awardIcon: p.awardIcon,
       photos: p.photos || [],
-      // NO code stored. NO plaintext letter. Just ciphertext.
       encrypted: encryptPayload(secretPayload, p.code)
     };
   });
@@ -71,6 +76,8 @@ function main() {
     process.exit(1);
   }
 
+  // bust require cache so re-runs pick up edits
+  delete require.cache[require.resolve(plaintextFile)];
   const people = require(plaintextFile);
   const publicData = buildPublicData(people);
 
