@@ -1,6 +1,7 @@
 /* ============================================================
-   LOGIC — biasanya tidak perlu diedit di bawah sini
+   A Little Love — App Logic (Refined)
    ============================================================ */
+
 let current = null;
 let pendingPerson = null;
 let isOpening = false;
@@ -8,49 +9,59 @@ let typing = false;
 let typeToken = 0;
 let sigClicks = 0;
 let sigResetTimer = null;
+let musicOn = false;
 
-// ---------- HUB ----------
-// Get opened letters from Firebase (returns a Promise)
+/* ---------------- HUB ---------------- */
 function getOpened() {
   return db.ref('opened').once('value')
-    .then(snapshot => {
-      const data = snapshot.val() || {};
-      return Object.keys(data);
-    })
+    .then(snap => Object.keys(snap.val() || {}))
     .catch(err => {
-      console.error("Error fetching opened letters:", err);
-      return []; // Fallback to empty array on error
+      console.error('Error fetching opened letters:', err);
+      return [];
     });
 }
 
 async function renderHub() {
-  const grid = document.getElementById("hubGrid");
-  if (!grid) {
-    console.error("hubGrid element not found!");
-    return;
-  }
-  
+  const grid = document.getElementById('hubGrid');
+  if (!grid) return;
+
+  grid.innerHTML = '<div class="hub-skeleton"></div>';
+
   try {
     const opened = await getOpened();
-    console.log("Rendering hub, opened letters:", opened); // Debug log
-    
-    grid.innerHTML = "";
+    grid.innerHTML = '';
+
     PEOPLE.forEach(p => {
       const isOpen = opened.includes(p.id);
-      const item = document.createElement("div");
-      item.className = "hub-item";
-      item.innerHTML =
-        '<div class="mini-env"><div class="mini-flap"></div>' +
-        '<div class="mini-seal">' + (isOpen ? "💌" : p.name.charAt(0).toUpperCase()) + "</div></div>" +
-        '<div class="mini-name">' + p.name + "</div>" +
-        '<div class="mini-status' + (isOpen ? " opened" : "") + '">' + (isOpen ? "Sudah dibuka 💌" : "🔒 khusus " + p.name) + "</div>";
-      item.onclick = () => openModal(p);
+      const item = document.createElement('div');
+      item.className = 'hub-item';
+      item.setAttribute('role', 'button');
+      item.setAttribute('tabindex', '0');
+      item.setAttribute('aria-label', `Buka surat untuk ${p.name}`);
 
-      item.addEventListener("mouseenter", () => {
-        const sound = document.getElementById("letterHoverSound");
+      item.innerHTML =
+        '<div class="mini-env">' +
+          '<div class="mini-flap"></div>' +
+          '<div class="mini-seal">' +
+            (isOpen ? '💌' : p.name.charAt(0).toUpperCase()) +
+          '</div>' +
+        '</div>' +
+        '<div class="mini-name">' + p.name + '</div>' +
+        '<div class="mini-status' + (isOpen ? ' opened' : '') + '">' +
+          (isOpen ? '● sudah dibuka' : '🔒 khusus ' + p.name) +
+        '</div>';
+
+      const activate = () => openModal(p);
+      item.addEventListener('click', activate);
+      item.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); activate(); }
+      });
+
+      item.addEventListener('mouseenter', () => {
+        const sound = document.getElementById('letterHoverSound');
         if (sound) {
           sound.currentTime = 0;
-          sound.volume = 0.25;
+          sound.volume = 0.2;
           sound.play().catch(() => {});
         }
       });
@@ -58,165 +69,330 @@ async function renderHub() {
       grid.appendChild(item);
     });
   } catch (err) {
-    console.error("Failed to render hub:", err);
-    // Show error message in grid
+    console.error('Failed to render hub:', err);
     grid.innerHTML = '<div style="text-align:center;color:#ff527b;padding:20px;">Gagal memuat surat. Refresh halaman ya.</div>';
   }
 }
 
-// ---------- CODE MODAL ----------
+/* ---------------- CODE MODAL ---------------- */
 function openModal(p) {
   pendingPerson = p;
-  document.getElementById("modalName").innerText = "Halo, " + p.name + "! 🔒";
-  document.getElementById("modalErr").innerText = "";
-  document.getElementById("codeInput").value = "";
-  document.getElementById("codeModal").classList.add("show");
-  setTimeout(() => document.getElementById("codeInput").focus(), 100);
+  document.getElementById('modalName').innerText = `Halo, ${p.name}! 🔒`;
+  document.getElementById('modalErr').innerText = '';
+  document.getElementById('codeInput').value = '';
+  document.getElementById('codeModal').classList.add('show');
+  setTimeout(() => document.getElementById('codeInput').focus(), 100);
 }
 
 function closeModal() {
-  document.getElementById("codeModal").classList.remove("show");
+  document.getElementById('codeModal').classList.remove('show');
   pendingPerson = null;
 }
 
 function verifyCode() {
-  const input = document.getElementById("codeInput");
+  const input = document.getElementById('codeInput');
   const val = input.value.trim().toUpperCase();
+
   if (pendingPerson && val === pendingPerson.code.toUpperCase()) {
-    document.getElementById("codeModal").classList.remove("show");
+    document.getElementById('codeModal').classList.remove('show');
     selectPerson(pendingPerson);
     pendingPerson = null;
   } else {
-    document.getElementById("modalErr").innerText = "Kode salah 😅 coba lagi ya!";
-    input.classList.add("shake");
-    setTimeout(() => input.classList.remove("shake"), 450);
+    document.getElementById('modalErr').innerText = 'Kode salah 😅 coba lagi ya!';
+    input.classList.add('shake');
+    setTimeout(() => input.classList.remove('shake'), 450);
   }
 }
 
-document.getElementById("codeInput").addEventListener("keydown", e => {
-  if (e.key === "Enter") verifyCode();
+document.getElementById('codeInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') verifyCode();
 });
 
-document.getElementById("codeModal").addEventListener("click", e => {
-  if (e.target.id === "codeModal") closeModal();
+document.getElementById('codeModal').addEventListener('click', e => {
+  if (e.target.id === 'codeModal') closeModal();
 });
 
-// ---------- SELECT PERSON ----------
+/* ---------------- SELECT PERSON ---------------- */
 function selectPerson(p) {
   current = p;
-  history.replaceState(null, "", "?p=" + p.id + "&key=" + encodeURIComponent(p.code));
+  history.replaceState(null, '', '?p=' + p.id + '&key=' + encodeURIComponent(p.code));
 
-  // apply accent
-  document.getElementById("letterContainer").style.setProperty("--primary-dark", p.accent);
-  document.getElementById("letterContainer").style.setProperty("--primary", p.accent);
+  const letter = document.getElementById('letterContainer');
+  letter.style.setProperty('--primary', p.accent);
+  letter.style.setProperty('--primary-dark', p.accent);
 
-  // envelope
-  document.getElementById("sealInitial").innerText = p.name.charAt(0).toUpperCase();
-  document.getElementById("previewTitle").innerText = "For " + p.name + " ❤️";
+  document.getElementById('sealInitial').innerText = p.name.charAt(0).toUpperCase();
+  document.getElementById('previewTitle').innerText = 'For ' + p.name;
 
-  // award
-  document.getElementById("awardIcon").innerText = p.awardIcon;
-  document.getElementById("awardTitle").innerText = p.awardTitle;
-  document.getElementById("awardDesc").innerText = p.awardDesc;
+  document.getElementById('awardIcon').innerText = p.awardIcon;
+  document.getElementById('awardTitle').innerText = p.awardTitle;
+  document.getElementById('awardDesc').innerText = p.awardDesc;
 
-  // letter
-  document.getElementById("letterTitle").innerText = p.title;
-  document.getElementById("letterBody").innerHTML = "";
-  document.getElementById("secretMsg").classList.remove("show");
-  document.getElementById("skipArea").style.display = "none";
+  document.getElementById('letterTitle').innerText = p.title;
+  document.getElementById('letterBody').innerHTML = '';
+  document.getElementById('secretMsg').classList.remove('show');
+  document.getElementById('skipArea').style.display = 'none';
   sigClicks = 0;
 
-  // reset envelope animation state
-  const env = document.getElementById("envelopeBox");
-  env.classList.remove("open", "fade-out");
-  env.style.display = "";
-  document.getElementById("letterContainer").classList.remove("show");
+  // Render galeri foto (carousel polaroid)
+  renderPhotos(p.photos || []);
+
+  const env = document.getElementById('envelopeBox');
+  env.classList.remove('open', 'fade-out');
+  env.style.display = '';
+  letter.classList.remove('show');
   isOpening = false;
 
-  document.getElementById("hubView").style.display = "none";
-  document.getElementById("envelopeScreen").classList.add("show");
+  document.getElementById('hubView').classList.remove('show');
+  document.getElementById('envelopeScreen').classList.add('show');
   window.scrollTo(0, 0);
 }
 
 function goBack() {
-  history.replaceState(null, "", location.pathname);
-  document.getElementById("envelopeScreen").classList.remove("show");
-  document.getElementById("letterContainer").classList.remove("show");
-  document.getElementById("hubView").style.display = "block";
-  renderHub(); // Re-render to update opened status
+  history.replaceState(null, '', location.pathname);
+  document.getElementById('envelopeScreen').classList.remove('show');
+  document.getElementById('letterContainer').classList.remove('show');
+  document.getElementById('hubView').classList.add('show');
+  renderHub();
   window.scrollTo(0, 0);
 }
 
-// ---------- ENVELOPE OPEN ----------
+/* ---------------- ENVELOPE OPEN ---------------- */
 function openEnvelopeAnimation() {
   if (isOpening) return;
-  
-  // Start background music on user click
-  const music = document.getElementById("bgMusic");
-  if (music) {
-    music.volume = 0.4;
-    music.play().catch(err => console.log("Autoplay prevented:", err));
-  }
-  
-  isOpening = true;
-  const envelope = document.getElementById("envelopeBox");
-  const letter = document.getElementById("letterContainer");
 
-  envelope.classList.add("open");
-  setTimeout(() => triggerConfetti(), 600);
+  const music = document.getElementById('bgMusic');
+  if (music && !musicOn) {
+    music.volume = 0.4;
+    music.play().then(() => {
+      musicOn = true;
+      const toggle = document.getElementById('audioToggle');
+      if (toggle) {
+        toggle.setAttribute('aria-pressed', 'true');
+        toggle.classList.add('visible');
+      }
+    }).catch(() => {});
+  }
+
+  isOpening = true;
+  const envelope = document.getElementById('envelopeBox');
+  const letter = document.getElementById('letterContainer');
+
+  envelope.classList.add('open');
+  setTimeout(() => triggerConfetti(), 650);
+
   setTimeout(() => {
-    envelope.classList.add("fade-out");
+    envelope.classList.add('fade-out');
     setTimeout(() => {
-      document.getElementById("envelopeScreen").classList.remove("show");
-      letter.classList.add("show");
+      document.getElementById('envelopeScreen').classList.remove('show');
+      letter.classList.add('show');
       if (current) markOpened(current.id);
       startTypewriter();
     }, 400);
-  }, 1200);
+  }, 1250);
 }
 
-// Mark letter as opened in Firebase
 function markOpened(id) {
-  const openedRef = db.ref('opened/' + id);
-  openedRef.set({
+  db.ref('opened/' + id).set({
     openedAt: new Date().toISOString(),
     opened: true
-  }).catch(err => console.error("Error saving opened status:", err));
+  }).catch(err => console.error('Error saving opened status:', err));
 }
 
-// ---------- TYPEWRITER ----------
+/* ============================================================
+   POLAROID CAROUSEL
+   ============================================================ */
+function renderPhotos(photos) {
+  const track = document.getElementById('polaroidTrack');
+  const dotsBox = document.getElementById('photoDots');
+  if (!track || !dotsBox) return;
+
+  track.innerHTML = '';
+  dotsBox.innerHTML = '';
+
+  if (!photos || !photos.length) {
+    track.innerHTML = '<div class="carousel-empty">Belum ada foto 🥲</div>';
+    updateCarouselArrows();
+    return;
+  }
+
+  photos.forEach((ph, i) => {
+    const isObj = typeof ph === 'object' && ph !== null;
+    const src = isObj ? ph.src : ph;
+    const caption = isObj && ph.caption ? ph.caption : '';
+
+    const wrap = document.createElement('div');
+    wrap.className = 'polaroid';
+    wrap.innerHTML =
+      '<img src="' + src + '" alt="Foto ' + (i + 1) + '" loading="lazy" draggable="false" />' +
+      (caption ? '<div class="polaroid-caption">' + caption + '</div>' : '<div class="polaroid-caption"></div>');
+    track.appendChild(wrap);
+
+    const dot = document.createElement('button');
+    dot.type = 'button';
+    dot.className = 'carousel-dot' + (i === 0 ? ' active' : '');
+    dot.setAttribute('aria-label', 'Ke foto ' + (i + 1));
+    dot.addEventListener('click', () => scrollToPhoto(i));
+    dotsBox.appendChild(dot);
+  });
+
+  // reset scroll, lalu update
+  track.scrollLeft = 0;
+  requestAnimationFrame(() => {
+    updateActiveDot();
+    updateCarouselArrows();
+  });
+}
+
+function scrollToPhoto(index) {
+  const track = document.getElementById('polaroidTrack');
+  if (!track) return;
+  const items = track.querySelectorAll('.polaroid');
+  const item = items[index];
+  if (!item) return;
+  const target = item.offsetLeft - (track.clientWidth - item.clientWidth) / 2;
+  track.scrollTo({ left: Math.max(0, target), behavior: 'smooth' });
+}
+
+function stepCarousel(dir) {
+  const track = document.getElementById('polaroidTrack');
+  if (!track) return;
+  const items = track.querySelectorAll('.polaroid');
+  if (!items.length) return;
+  const step = items[0].offsetWidth + 22;
+  track.scrollBy({ left: dir * step, behavior: 'smooth' });
+}
+
+function updateActiveDot() {
+  const track = document.getElementById('polaroidTrack');
+  const dotsBox = document.getElementById('photoDots');
+  if (!track || !dotsBox) return;
+  const items = track.querySelectorAll('.polaroid');
+  if (!items.length) return;
+
+  const center = track.scrollLeft + track.clientWidth / 2;
+  let closest = 0, best = Infinity;
+  items.forEach((it, i) => {
+    const mid = it.offsetLeft + it.offsetWidth / 2;
+    const d = Math.abs(mid - center);
+    if (d < best) { best = d; closest = i; }
+  });
+
+  const dots = dotsBox.querySelectorAll('.carousel-dot');
+  dots.forEach((d, i) => d.classList.toggle('active', i === closest));
+}
+
+function updateCarouselArrows() {
+  const track = document.getElementById('polaroidTrack');
+  const prev = document.getElementById('photoPrev');
+  const next = document.getElementById('photoNext');
+  if (!track || !prev || !next) return;
+  const max = track.scrollWidth - track.clientWidth - 2;
+  prev.disabled = track.scrollLeft <= 2;
+  next.disabled = track.scrollLeft >= max;
+}
+
+/* Carousel event bindings */
+document.addEventListener('DOMContentLoaded', () => {
+  const track = document.getElementById('polaroidTrack');
+  const prev = document.getElementById('photoPrev');
+  const next = document.getElementById('photoNext');
+  if (!track) return;
+
+  if (prev) prev.addEventListener('click', () => stepCarousel(-1));
+  if (next) next.addEventListener('click', () => stepCarousel(1));
+
+  // scroll -> update dot + arrows
+  track.addEventListener('scroll', () => {
+    clearTimeout(track._t);
+    track._t = setTimeout(() => {
+      updateActiveDot();
+      updateCarouselArrows();
+    }, 80);
+  }, { passive: true });
+
+  // keyboard
+  track.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight') { e.preventDefault(); stepCarousel(1); }
+    if (e.key === 'ArrowLeft')  { e.preventDefault(); stepCarousel(-1); }
+  });
+
+  // prevent native image drag ghost
+  track.addEventListener('dragstart', e => e.preventDefault());
+
+  // mouse drag to scroll
+  let drag = null;
+  track.addEventListener('pointerdown', e => {
+    if (e.pointerType === 'touch') return;      // biarkan native touch scroll
+    if (e.button !== 0) return;
+    drag = { x: e.clientX, y: e.clientY, scroll: track.scrollLeft, moved: false, id: e.pointerId };
+  });
+
+  track.addEventListener('pointermove', e => {
+    if (!drag) return;
+    const dx = e.clientX - drag.x;
+    const dy = e.clientY - drag.y;
+    if (!drag.moved) {
+      if (Math.abs(dx) < 6) return;
+      if (Math.abs(dy) > Math.abs(dx)) { drag = null; return; }
+      drag.moved = true;
+      track.classList.add('dragging');
+      try { track.setPointerCapture(drag.id); } catch (_) {}
+    }
+    track.scrollLeft = drag.scroll - dx;
+  });
+
+  const endDrag = () => {
+    if (!drag) return;
+    track.classList.remove('dragging');
+    drag = null;
+    updateActiveDot();
+    updateCarouselArrows();
+  };
+  track.addEventListener('pointerup', endDrag);
+  track.addEventListener('pointercancel', endDrag);
+  track.addEventListener('pointerleave', endDrag);
+
+  // resize
+  window.addEventListener('resize', () => {
+    updateActiveDot();
+    updateCarouselArrows();
+  });
+});
+
+/* ---------------- TYPEWRITER ---------------- */
 function startTypewriter() {
   typing = true;
   const token = ++typeToken;
-  const body = document.getElementById("letterBody");
-  body.innerHTML = "";
-  document.getElementById("skipArea").style.display = "block";
+  const body = document.getElementById('letterBody');
+  body.innerHTML = '';
+  document.getElementById('skipArea').style.display = 'block';
+
   const paras = current.letter;
   let pi = 0;
 
-  const keyboardNeighbors = {
-    a: "qwsz", b: "vghn", c: "xdfv", d: "erfcxs", e: "wsdr",
-    f: "rtgvcd", g: "tyhbvf", h: "yujnbg", i: "ujko", j: "uikmnh",
-    k: "ijolm", l: "kop", m: "njk", n: "bhjm", o: "iklp",
-    p: "ol", q: "wa", r: "edft", s: "wedxza", t: "rfgy",
-    u: "yhji", v: "cfgb", w: "qeas", x: "zsdc", y: "tghu", z: "asx"
+  const nb = {
+    a:'qwsz', b:'vghn', c:'xdfv', d:'erfcxs', e:'wsdr', f:'rtgvcd',
+    g:'tyhbvf', h:'yujnbg', i:'ujko', j:'uikmnh', k:'ijolm', l:'kop',
+    m:'njk', n:'bhjm', o:'iklp', p:'ol', q:'wa', r:'edft', s:'wedxza',
+    t:'rfgy', u:'yhji', v:'cfgb', w:'qeas', x:'zsdc', y:'tghu', z:'asx'
   };
 
-  function getRandomWrongChar(char) {
-    const lower = char.toLowerCase();
-    const choices = keyboardNeighbors[lower];
-    if (!choices) return "a";
-    const wrong = choices[Math.floor(Math.random() * choices.length)];
-    return char === char.toUpperCase() ? wrong.toUpperCase() : wrong;
+  function wrong(c) {
+    const l = c.toLowerCase();
+    const ch = nb[l];
+    if (!ch) return 'a';
+    const w = ch[Math.floor(Math.random() * ch.length)];
+    return c === c.toUpperCase() ? w.toUpperCase() : w;
   }
 
-  function typeNextPara() {
+  function nextPara() {
     if (!typing || token !== typeToken) return;
     if (pi >= paras.length) { finishTyping(); return; }
 
-    const p = document.createElement("p");
-    const cursor = document.createElement("span");
-    cursor.className = "type-cursor";
+    const p = document.createElement('p');
+    const cursor = document.createElement('span');
+    cursor.className = 'type-cursor';
     p.appendChild(cursor);
     body.appendChild(p);
 
@@ -227,53 +403,47 @@ function startTypewriter() {
       if (!typing || token !== typeToken) return;
 
       if (ci < text.length) {
-        const targetChar = text[ci];
-        const shouldMakeTypo = Math.random() < 0.03 && /[a-zA-Z]/.test(targetChar);
+        const tc = text[ci];
+        const typo = Math.random() < 0.03 && /[a-zA-Z]/.test(tc);
 
-        if (shouldMakeTypo) {
-          const wrongChar = getRandomWrongChar(targetChar);
-          cursor.insertAdjacentText("beforebegin", wrongChar);
-          
+        if (typo) {
+          cursor.insertAdjacentText('beforebegin', wrong(tc));
           setTimeout(() => {
             if (!typing || token !== typeToken) return;
-            const textNode = cursor.previousSibling;
-            if (textNode && textNode.nodeType === Node.TEXT_NODE) {
-              textNode.nodeValue = textNode.nodeValue.slice(0, -1);
+            const n = cursor.previousSibling;
+            if (n && n.nodeType === Node.TEXT_NODE) {
+              n.nodeValue = n.nodeValue.slice(0, -1);
             }
             setTimeout(tick, Math.floor(Math.random() * 40) + 30);
           }, Math.floor(Math.random() * 70) + 50);
           return;
         }
 
-        cursor.insertAdjacentText("beforebegin", targetChar);
+        cursor.insertAdjacentText('beforebegin', tc);
         ci++;
 
-        let delay = Math.floor(Math.random() * 20) + 15;
-        if (targetChar === " ") {
-          delay += Math.floor(Math.random() * 15) + 5; 
-        } else if ([".", ",", "!", "?", ";"].includes(targetChar)) {
-          delay += Math.floor(Math.random() * 100) + 60;
-        }
+        let d = Math.floor(Math.random() * 20) + 15;
+        if (tc === ' ') d += Math.floor(Math.random() * 15) + 5;
+        else if (['.', ',', '!', '?', ';'].includes(tc))
+          d += Math.floor(Math.random() * 100) + 60;
 
-        setTimeout(tick, delay);
+        setTimeout(tick, d);
       } else {
         cursor.remove();
         pi++;
-        setTimeout(typeNextPara, Math.floor(Math.random() * 200) + 200); 
+        setTimeout(nextPara, Math.floor(Math.random() * 200) + 200);
       }
     }
-
     tick();
   }
-
-  typeNextPara();
+  nextPara();
 }
 
 function finishTyping() {
   typing = false;
-  document.getElementById("skipArea").style.display = "none";
-  document.getElementById("letterBody").innerHTML =
-    current.letter.map(t => "<p>" + t + "</p>").join("");
+  document.getElementById('skipArea').style.display = 'none';
+  document.getElementById('letterBody').innerHTML =
+    current.letter.map(t => '<p>' + t + '</p>').join('');
 }
 
 function skipTyping() {
@@ -281,147 +451,190 @@ function skipTyping() {
   finishTyping();
 }
 
-// ---------- AWARD SCROLL CONFETTI ----------
-let awardFired = false;
-const awardObserver = new IntersectionObserver(entries => {
-  entries.forEach(en => {
-    if (en.isIntersecting && !awardFired) {
-      awardFired = true;
-      confetti({
-        particleCount: 80, spread: 70, startVelocity: 40,
-        origin: { y: en.boundingClientRect.top / window.innerHeight },
-        colors: ["#ffbe0b", "#ff527b", "#ffffff"]
-      });
+/* ---------------- SIGNATURE EASTER EGG ---------------- */
+document.addEventListener('DOMContentLoaded', () => {
+  const sig = document.getElementById('signature');
+  if (!sig) return;
+  sig.addEventListener('click', () => {
+    if (!current) return;
+    sigClicks++;
+    clearTimeout(sigResetTimer);
+    sigResetTimer = setTimeout(() => { sigClicks = 0; }, 2500);
+    if (sigClicks === 3) {
+      confetti({ particleCount: 10, spread: 30, origin: { y: 0.7 }, scalar: 0.7 });
+    }
+    if (sigClicks >= 5) {
+      sigClicks = 0;
+      const msg = document.getElementById('secretMsg');
+      msg.innerText = current.secretMsg;
+      msg.classList.add('show');
+      triggerConfetti();
     }
   });
-}, { threshold: 0.5 });
-
-// Observe when DOM is ready
-document.addEventListener('DOMContentLoaded', () => {
-  const awardCard = document.getElementById("awardCard");
-  if (awardCard) awardObserver.observe(awardCard);
 });
 
-// ---------- EASTER EGG: CLICK SIGNATURE 5x ----------
-document.addEventListener('DOMContentLoaded', () => {
-  const signature = document.getElementById("signature");
-  if (signature) {
-    signature.addEventListener("click", () => {
-      if (!current) return;
-      sigClicks++;
-      clearTimeout(sigResetTimer);
-      sigResetTimer = setTimeout(() => { sigClicks = 0; }, 2500);
-      if (sigClicks === 3) {
-        confetti({ particleCount: 10, spread: 30, origin: { y: 0.7 }, scalar: 0.7 });
-      }
-      if (sigClicks >= 5) {
-        sigClicks = 0;
-        const msg = document.getElementById("secretMsg");
-        msg.innerText = current.secretMsg;
-        msg.classList.add("show");
-        triggerConfetti();
-      }
-    });
-  }
-});
-
-// ---------- SPAM LOVE ----------
+/* ---------------- SPAM LOVE ---------------- */
 function spamLove(e) {
   confetti({
-    particleCount: 25, spread: 50,
-    origin: { x: e.clientX / window.innerWidth, y: e.clientY / window.innerHeight }
+    particleCount: 25, spread: 55,
+    origin: {
+      x: e.clientX / window.innerWidth,
+      y: e.clientY / window.innerHeight
+    },
+    colors: ['#ff527b', '#ffbe0b', '#ff9ebb', '#ffffff']
   });
-  const hearts = ["💖", "💕", "✨", "🌸", "🥰", "🧁"];
+  const hearts = ['💖', '💕', '✨', '🌸', '🥰', '🧁'];
   for (let i = 0; i < 6; i++) {
-    const heart = document.createElement("div");
-    heart.classList.add("floating-heart");
-    heart.innerText = hearts[Math.floor(Math.random() * hearts.length)];
-    heart.style.left = (e.clientX + (Math.random() * 80 - 40)) + "px";
-    heart.style.top = (e.clientY + (Math.random() * 20 - 10)) + "px";
-    document.body.appendChild(heart);
-    setTimeout(() => heart.remove(), 2000);
+    const h = document.createElement('div');
+    h.classList.add('floating-heart');
+    h.innerText = hearts[Math.floor(Math.random() * hearts.length)];
+    h.style.left = (e.clientX + (Math.random() * 80 - 40)) + 'px';
+    h.style.top  = (e.clientY + (Math.random() * 20 - 10)) + 'px';
+    document.body.appendChild(h);
+    setTimeout(() => h.remove(), 2100);
   }
 }
 
-// ---------- CONFETTI EXPLOSION ----------
+/* ---------------- COPY PERSONAL LINK ---------------- */
+function copyPersonalLink(e) {
+  if (!current) return;
+  const url = new URL(location.origin + location.pathname);
+  url.searchParams.set('p', current.id);
+  url.searchParams.set('key', current.code);
+
+  const done = () => {
+    const btn = e.currentTarget;
+    const original = btn.innerHTML;
+    btn.innerHTML = '<span aria-hidden="true">✓</span> Tersalin!';
+    setTimeout(() => { btn.innerHTML = original; }, 1800);
+    confetti({
+      particleCount: 20, spread: 40, scalar: 0.7,
+      origin: { x: e.clientX / window.innerWidth, y: e.clientY / window.innerHeight }
+    });
+  };
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(url.toString()).then(done).catch(() => {
+      prompt('Copy link ini:', url.toString());
+    });
+  } else {
+    prompt('Copy link ini:', url.toString());
+  }
+}
+
+/* ---------------- CONFETTI ---------------- */
 function triggerConfetti() {
-  var count = 200;
-  var defaults = { origin: { y: 0.6 } };
-  function fire(particleRatio, opts) {
-    confetti(Object.assign({}, defaults, opts, {
-      particleCount: Math.floor(count * particleRatio)
+  const count = 200;
+  const base = { origin: { y: 0.6 } };
+  const colors = ['#ff527b', '#ffbe0b', '#ff9ebb', '#ffffff'];
+  function fire(r, o) {
+    confetti(Object.assign({}, base, o, {
+      particleCount: Math.floor(count * r),
+      colors
     }));
   }
   fire(0.25, { spread: 26, startVelocity: 55 });
-  fire(0.2, { spread: 60 });
+  fire(0.20, { spread: 60 });
   fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 });
-  fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
-  fire(0.1, { spread: 120, startVelocity: 45 });
+  fire(0.10, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 });
+  fire(0.10, { spread: 120, startVelocity: 45 });
 }
 
-// ---------- CURSOR HEART TRAIL ----------
+/* ---------------- CURSOR TRAIL ---------------- */
 let lastTrail = 0;
-document.addEventListener("mousemove", e => {
+document.addEventListener('mousemove', e => {
   const now = Date.now();
-  if (now - lastTrail < 90) return;
+  if (now - lastTrail < 110) return;
   lastTrail = now;
-  const trail = document.createElement("div");
-  trail.className = "cursor-trail";
-  trail.innerText = ["💖", "💕", "✨", "🌸"][Math.floor(Math.random() * 4)];
-  trail.style.left = e.clientX + "px";
-  trail.style.top = e.clientY + "px";
-  document.body.appendChild(trail);
-  setTimeout(() => trail.remove(), 900);
+  const t = document.createElement('div');
+  t.className = 'cursor-trail';
+  t.innerText = ['💖', '💕', '✨', '🌸'][Math.floor(Math.random() * 4)];
+  t.style.left = e.clientX + 'px';
+  t.style.top  = e.clientY + 'px';
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 950);
 });
 
-// ---------- GREETING LANDING ----------
-let initialRoutePerson = null;
-
+/* ---------------- GREETING -> MAIN ---------------- */
 async function enterMainPage() {
-  const greeting = document.getElementById("greetingScreen");
-  const main = document.getElementById("mainContent");
-  const music = document.getElementById("bgMusic");
+  const greeting = document.getElementById('greetingScreen');
+  const main = document.getElementById('mainContent');
+  const music = document.getElementById('bgMusic');
+  const audioToggle = document.getElementById('audioToggle');
 
   if (music) {
     music.volume = 0.4;
-    music.play().catch(err => console.log("Music could not start:", err));
+    music.play().then(() => {
+      musicOn = true;
+      audioToggle.setAttribute('aria-pressed', 'true');
+    }).catch(() => {});
   }
 
-  greeting.classList.add("hidden");
+  audioToggle.classList.add('visible');
+
+  greeting.classList.add('hidden');
 
   setTimeout(async () => {
-    greeting.style.display = "none";
-    main.classList.add("show");
-
-    // ALWAYS show the hub view
-    document.getElementById("hubView").style.display = "block";
-    await renderHub(); // Wait for hub to render
-  }, 350);
+    greeting.style.display = 'none';
+    main.classList.add('show');
+    document.getElementById('hubView').classList.add('show');
+    await renderHub();
+  }, 750);
 }
 
-// Ensure greeting button listener is attached when DOM is ready
+/* ---------------- AUDIO TOGGLE ---------------- */
 document.addEventListener('DOMContentLoaded', () => {
-  const greetingBtn = document.getElementById("greetingOpen");
-  if (greetingBtn) {
-    greetingBtn.addEventListener("click", enterMainPage);
-  } else {
-    console.error("greetingOpen button not found!");
-  }
+  const btn = document.getElementById('audioToggle');
+  const music = document.getElementById('bgMusic');
+  if (!btn || !music) return;
+
+  btn.addEventListener('click', () => {
+    if (music.paused) {
+      music.play().then(() => {
+        musicOn = true;
+        btn.setAttribute('aria-pressed', 'true');
+      }).catch(() => {});
+    } else {
+      music.pause();
+      musicOn = false;
+      btn.setAttribute('aria-pressed', 'false');
+    }
+  });
 });
 
-// ---------- INIT: check for personal link (?p=...&key=...) ----------
+/* ---------------- BACK TO TOP ---------------- */
+document.addEventListener('DOMContentLoaded', () => {
+  const btn = document.getElementById('backToTop');
+  if (!btn) return;
+
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 400) btn.classList.add('visible');
+    else btn.classList.remove('visible');
+  }, { passive: true });
+
+  btn.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+});
+
+/* ---------------- GREETING BUTTON ---------------- */
+document.addEventListener('DOMContentLoaded', () => {
+  const btn = document.getElementById('greetingOpen');
+  if (btn) btn.addEventListener('click', enterMainPage);
+});
+
+/* ---------------- INIT: personal link (?p=...&key=...) ---------------- */
 (function init() {
   const params = new URLSearchParams(location.search);
-  const pid = params.get("p");
-  const key = params.get("key");
+  const pid = params.get('p');
+  const key = params.get('key');
 
   if (pid) {
     const person = PEOPLE.find(x => x.id === pid);
     if (person && key && key.toUpperCase() === person.code.toUpperCase()) {
-      // Just store the person, don't auto-click
-      initialRoutePerson = person;
-      // Optional: Clean URL immediately so refresh goes to hub
-      history.replaceState(null, "", location.pathname);
+      const title = document.getElementById('greetingTitle');
+      if (title) title.innerText = 'For ' + person.name;
+      history.replaceState(null, '', location.pathname);
     }
   }
 })();
