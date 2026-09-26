@@ -11,10 +11,18 @@
     return bytes;
   }
 
+  // ⬇️ Normalize: trim whitespace + lowercase, so "ValenLove2026!X",
+  //    "valenlove2026!x", and " ValenLove2026!X " all produce the same key.
+  function normalizeCode(code) {
+    return String(code || '').trim().toLowerCase();
+  }
+
   async function deriveKey(code, saltBytes, iterations) {
+    const normalized = normalizeCode(code);
+
     const keyMaterial = await crypto.subtle.importKey(
       'raw',
-      new TextEncoder().encode(code),
+      new TextEncoder().encode(normalized),
       'PBKDF2',
       false,
       ['deriveKey']

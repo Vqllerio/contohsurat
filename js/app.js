@@ -1,15 +1,20 @@
 /* ============================================================
-   A Little Love — App Logic (Refined)
+   A Little Love — App Logic (Encrypted Edition)
    ============================================================ */
 
 let current = null;
 let pendingPerson = null;
+let decryptedPayload = null;
 let isOpening = false;
 let typing = false;
 let typeToken = 0;
 let sigClicks = 0;
 let sigResetTimer = null;
 let musicOn = false;
+
+// Brute-force throttling
+let failedAttempts = 0;
+let lockUntil = 0;
 
 /* ---------------- HUB ---------------- */
 function getOpened() {
@@ -79,9 +84,11 @@ function openModal(p) {
   pendingPerson = p;
   document.getElementById('modalName').innerText = `Halo, ${p.name}! 🔒`;
   document.getElementById('modalErr').innerText = '';
-  document.getElementById('codeInput').value = '';
+  const input = document.getElementById('codeInput');
+  input.value = '';
+  input.type = 'text';           // ← visible, case-sensitive
   document.getElementById('codeModal').classList.add('show');
-  setTimeout(() => document.getElementById('codeInput').focus(), 100);
+  setTimeout(() => input.focus(), 100);
 }
 
 function closeModal() {
@@ -89,18 +96,71 @@ function closeModal() {
   pendingPerson = null;
 }
 
-function verifyCode() {
+/* ---------------- VERIFY CODE (via DECRYPTION) ---------------- */
+async function verifyCode() {
   const input = document.getElementById('codeInput');
-  const val = input.value.trim().toUpperCase();
+  const errBox = document.getElementById('modalErr');
+  const btn = document.querySelector('.modal-btn');
 
-  if (pendingPerson && val === pendingPerson.code.toUpperCase()) {
+  // ⬇️ Trim whitespace — crypto layer also normalizes case
+  const val = input.value.trim();
+
+  // Throttle after repeated failures
+  const now = Date.now();
+  if (now < lockUntil) {
+    const s = Math.ceil((lockUntil - now) / 1000);
+    errBox.innerText = `Terlalu banyak percobaan. Coba lagi dalam ${s} detik.`;
+    return;
+  }
+
+  if (!pendingPerson || !val) {
+    errBox.innerText = 'Masukkan kode dulu ya!';
+    return;
+  }
+
+  // Loading state
+  if (btn) {
+    btn.disabled = true;
+    if (!btn.dataset.label) btn.dataset.label = btn.innerText;
+    btn.innerText = 'Membuka...';
+  }
+  errBox.innerText = '';
+
+  try {
+    const payload = await LetterCrypto.decrypt(pendingPerson.encrypted, val);
+
+    // ✅ Success
+    decryptedPayload = payload;
+    failedAttempts = 0;
+
     document.getElementById('codeModal').classList.remove('show');
-    selectPerson(pendingPerson);
+    const person = pendingPerson;
     pendingPerson = null;
-  } else {
-    document.getElementById('modalErr').innerText = 'Kode salah 😅 coba lagi ya!';
-    input.classList.add('shake');
-    setTimeout(() => input.classList.remove('shake'), 450);
+    input.value = '';
+
+    selectPerson(person, payload);
+  } catch (err) {
+    // ❌ Wrong code (or unsupported browser)
+    if (err && err.message === 'Browser tidak mendukung Web Crypto API') {
+      errBox.innerText = 'Browser kamu tidak mendukung. Coba Chrome/Safari terbaru.';
+    } else {
+      failedAttempts++;
+      if (failedAttempts >= 5) {
+        lockUntil = Date.now() + 30000;
+        failedAttempts = 0;
+        errBox.innerText = 'Terlalu banyak percobaan. Tunggu 30 detik ya.';
+      } else {
+        errBox.innerText = 'Kode salah 😅 coba lagi ya!';
+      }
+      input.classList.add('shake');
+      setTimeout(() => input.classList.remove('shake'), 450);
+      input.select();
+    }
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerText = btn.dataset.label || 'Buka Surat';
+    }
   }
 }
 
@@ -113,9 +173,11 @@ document.getElementById('codeModal').addEventListener('click', e => {
 });
 
 /* ---------------- SELECT PERSON ---------------- */
-function selectPerson(p) {
-  current = p;
-  history.replaceState(null, '', '?p=' + p.id + '&key=' + encodeURIComponent(p.code));
+function selectPerson(p, payload) {
+  current = Object.assign({}, p, payload);
+
+  // No key in URL
+  history.replaceState(null, '', '?p=' + p.id);
 
   const letter = document.getElementById('letterContainer');
   letter.style.setProperty('--primary', p.accent);
@@ -125,16 +187,15 @@ function selectPerson(p) {
   document.getElementById('previewTitle').innerText = 'For ' + p.name;
 
   document.getElementById('awardIcon').innerText = p.awardIcon;
-  document.getElementById('awardTitle').innerText = p.awardTitle;
-  document.getElementById('awardDesc').innerText = p.awardDesc;
+  document.getElementById('awardTitle').innerText = payload.awardTitle;
+  document.getElementById('awardDesc').innerText = payload.awardDesc;
 
-  document.getElementById('letterTitle').innerText = p.title;
+  document.getElementById('letterTitle').innerText = payload.title;
   document.getElementById('letterBody').innerHTML = '';
   document.getElementById('secretMsg').classList.remove('show');
   document.getElementById('skipArea').style.display = 'none';
   sigClicks = 0;
 
-  // Render galeri foto (carousel polaroid)
   renderPhotos(p.photos || []);
 
   const env = document.getElementById('envelopeBox');
@@ -225,7 +286,7 @@ function renderPhotos(photos) {
     wrap.className = 'polaroid';
     wrap.innerHTML =
       '<img src="' + src + '" alt="Foto ' + (i + 1) + '" loading="lazy" draggable="false" />' +
-      (caption ? '<div class="polaroid-caption">' + caption + '</div>' : '<div class="polaroid-caption"></div>');
+      '<div class="polaroid-caption">' + caption + '</div>';
     track.appendChild(wrap);
 
     const dot = document.createElement('button');
@@ -236,7 +297,6 @@ function renderPhotos(photos) {
     dotsBox.appendChild(dot);
   });
 
-  // reset scroll, lalu update
   track.scrollLeft = 0;
   requestAnimationFrame(() => {
     updateActiveDot();
@@ -292,7 +352,6 @@ function updateCarouselArrows() {
   next.disabled = track.scrollLeft >= max;
 }
 
-/* Carousel event bindings */
 document.addEventListener('DOMContentLoaded', () => {
   const track = document.getElementById('polaroidTrack');
   const prev = document.getElementById('photoPrev');
@@ -302,7 +361,6 @@ document.addEventListener('DOMContentLoaded', () => {
   if (prev) prev.addEventListener('click', () => stepCarousel(-1));
   if (next) next.addEventListener('click', () => stepCarousel(1));
 
-  // scroll -> update dot + arrows
   track.addEventListener('scroll', () => {
     clearTimeout(track._t);
     track._t = setTimeout(() => {
@@ -311,19 +369,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 80);
   }, { passive: true });
 
-  // keyboard
   track.addEventListener('keydown', e => {
     if (e.key === 'ArrowRight') { e.preventDefault(); stepCarousel(1); }
     if (e.key === 'ArrowLeft')  { e.preventDefault(); stepCarousel(-1); }
   });
 
-  // prevent native image drag ghost
   track.addEventListener('dragstart', e => e.preventDefault());
 
-  // mouse drag to scroll
   let drag = null;
   track.addEventListener('pointerdown', e => {
-    if (e.pointerType === 'touch') return;      // biarkan native touch scroll
+    if (e.pointerType === 'touch') return;
     if (e.button !== 0) return;
     drag = { x: e.clientX, y: e.clientY, scroll: track.scrollLeft, moved: false, id: e.pointerId };
   });
@@ -353,7 +408,6 @@ document.addEventListener('DOMContentLoaded', () => {
   track.addEventListener('pointercancel', endDrag);
   track.addEventListener('pointerleave', endDrag);
 
-  // resize
   window.addEventListener('resize', () => {
     updateActiveDot();
     updateCarouselArrows();
@@ -362,6 +416,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 /* ---------------- TYPEWRITER ---------------- */
 function startTypewriter() {
+  if (!current || !current.letter) return;
+
   typing = true;
   const token = ++typeToken;
   const body = document.getElementById('letterBody');
@@ -442,6 +498,7 @@ function startTypewriter() {
 function finishTyping() {
   typing = false;
   document.getElementById('skipArea').style.display = 'none';
+  if (!current || !current.letter) return;
   document.getElementById('letterBody').innerHTML =
     current.letter.map(t => '<p>' + t + '</p>').join('');
 }
@@ -466,7 +523,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (sigClicks >= 5) {
       sigClicks = 0;
       const msg = document.getElementById('secretMsg');
-      msg.innerText = current.secretMsg;
+      msg.innerText = current.secretMsg || '';
       msg.classList.add('show');
       triggerConfetti();
     }
@@ -500,13 +557,13 @@ function copyPersonalLink(e) {
   if (!current) return;
   const url = new URL(location.origin + location.pathname);
   url.searchParams.set('p', current.id);
-  url.searchParams.set('key', current.code);
+  // ⚠️ No code in URL — share separately.
 
   const done = () => {
     const btn = e.currentTarget;
     const original = btn.innerHTML;
-    btn.innerHTML = '<span aria-hidden="true">✓</span> Tersalin!';
-    setTimeout(() => { btn.innerHTML = original; }, 1800);
+    btn.innerHTML = '<span aria-hidden="true">✓</span> Link tersalin! Kirim kodenya terpisah ya 🔐';
+    setTimeout(() => { btn.innerHTML = original; }, 2600);
     confetti({
       particleCount: 20, spread: 40, scalar: 0.7,
       origin: { x: e.clientX / window.innerWidth, y: e.clientY / window.innerHeight }
@@ -623,18 +680,16 @@ document.addEventListener('DOMContentLoaded', () => {
   if (btn) btn.addEventListener('click', enterMainPage);
 });
 
-/* ---------------- INIT: personal link (?p=...&key=...) ---------------- */
+/* ---------------- INIT: personal link (?p=...) ---------------- */
 (function init() {
   const params = new URLSearchParams(location.search);
   const pid = params.get('p');
-  const key = params.get('key');
 
   if (pid) {
     const person = PEOPLE.find(x => x.id === pid);
-    if (person && key && key.toUpperCase() === person.code.toUpperCase()) {
+    if (person) {
       const title = document.getElementById('greetingTitle');
       if (title) title.innerText = 'For ' + person.name;
-      history.replaceState(null, '', location.pathname);
     }
   }
 })();

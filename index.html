@@ -144,16 +144,14 @@
           </div>
         </div>
 
-        <!-- 4. PHOTOS — polaroid carousel -->
+        <!-- 4. PHOTOS -->
         <div class="card">
           <div class="gallery-title">📸 Cute Memories</div>
 
           <div class="carousel-wrap">
             <button class="carousel-arrow prev" id="photoPrev" type="button" aria-label="Foto sebelumnya">‹</button>
 
-            <div class="polaroid-track" id="polaroidTrack" role="region" aria-label="Galeri foto" tabindex="0">
-              <!-- Diisi otomatis oleh app.js dari array `photos` di data.js -->
-            </div>
+            <div class="polaroid-track" id="polaroidTrack" role="region" aria-label="Galeri foto" tabindex="0"></div>
 
             <button class="carousel-arrow next" id="photoNext" type="button" aria-label="Foto berikutnya">›</button>
           </div>
@@ -190,13 +188,27 @@
       <div class="modal-eyebrow">— locked pressing —</div>
       <h2 id="modalName">Halo! 🔒</h2>
       <p class="sub">Surat ini khusus untuk mata yang tepat.<br />Masukkan kode rahasiamu:</p>
-      <input type="text" id="codeInput" placeholder="KODE RAHASIA" autocomplete="off" aria-label="Kode rahasia" />
+
+      <!-- ⬇️ THE FIX — no autocorrect/autocapitalize/spellcheck -->
+      <input
+        type="text"
+        id="codeInput"
+        placeholder="kode rahasia"
+        autocomplete="off"
+        autocorrect="off"
+        autocapitalize="off"
+        spellcheck="false"
+        inputmode="text"
+        aria-label="Kode rahasia"
+      />
+
       <div class="err" id="modalErr"></div>
       <button class="modal-btn" onclick="verifyCode()">Buka Surat</button>
       <span class="close-link" onclick="closeModal()">bukan aku, kembali</span>
     </div>
   </div>
 
+  <!-- Load scripts in order -->
   <script src="js/firebase-config.js"></script>
   <script src="js/crypto.js"></script>
   <script src="js/data.js"></script>

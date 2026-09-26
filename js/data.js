@@ -1,36 +1,42 @@
 /* ============================================================
-   ✏️  CONFIG — EDIT SEMUA DATA DI SINI
+   A Little Love — GENERATED FILE. DO NOT EDIT BY HAND.
+   Run `npm run build` in /tools to regenerate.
+   Built: 2026-09-26T16:42:21.089Z
    ============================================================ */
+
 const PEOPLE = [
   {
-    id: "valen",
-    name: "Valen",
-    title: "Untuk Valen",
-    code: "VALEN2026",
-    accent: "#ff527b",
-    awardIcon: "💖",
-    awardTitle: "Favoritnya Vallerio",
-    awardDesc: "Seseorang yang selalu berhasil bikin hari-hari terasa lebih berwarna.",
-    secretMsg: "Kamu nemu pesan rahasianya! 🎉 Hadiahnya: Kamu harus tahu kalau Vallerio bakal selalu ada buat kamu. Terus tersenyum ya, Valen! 💖",
-
-    // 📸 Tambahkan foto sebanyak yang kamu mau di sini.
-    // Format simpel:   "Asset/Foto/Photo_PCD1.png"
-    // Format + caption: { src: "Asset/Foto/Photo_PCD1.png", caption: "Senyum manis" }
-    photos: [
-      { src: "Asset/Foto/Photo_PCD1.png", caption: "Momen lucu kita ✨" },
-      { src: "Asset/Foto/Photo_PCD2.png", caption: "Cantik banget 🥰" },
-      { src: "Asset/Foto/Photo_PCD3.png", caption: "Senyum manis 💖" }
-      // { src: "Asset/Foto/Photo_PCD4.png", caption: "..." },
-      // { src: "Asset/Foto/Photo_PCD5.png", caption: "..." },
+    "id": "valen",
+    "name": "Valen",
+    "accent": "#ff527b",
+    "awardIcon": "💖",
+    "photos": [
+      {
+        "src": "Asset/Foto/Foto1.jpeg",
+        "caption": "Going Somehwere ✨"
+      },
+      {
+        "src": "Asset/Foto/Foto2.jpeg",
+        "caption": "Holding Hands 🥰"
+      },
+      {
+        "src": "Asset/Foto/Foto3.jpeg",
+        "caption": "Cilikk 💖"
+      },
+      {
+        "src": "Asset/Foto/Foto4.jpeg",
+        "caption": "Nom Nomm 💖"
+      },
+      {
+        "src": "Asset/Foto/Foto5.jpeg",
+        "caption": "Bocil ML 🥰"
+      }
     ],
-
-    letter: [
-      "Hai, Valen.",
-      "Kalau kamu lagi baca halaman ini, berarti website kecil yang aku bikin khusus buat kamu ini akhirnya selesai. Aku sengaja pilih cara ini—menuliskan semuanya di ruang digital milik kita sendiri—supaya kapan pun kamu merasa ragu atau capek, kamu bisa balik ke sini dan ingat kalau kamu selalu punya tempat di hati aku.",
-      "Sejak kamu hadir dalam hidup aku, banyak hal sederhana yang mendadak terasa jauh lebih berarti. Tawa kamu, cara kamu melihat hal-hal kecil di sekitar kamu, sampai cara kamu bicara tentang hal yang kamu sukai. Semuanya perlahan jadi bagian favorit dari hari-hari aku.",
-      "Aku selalu percaya bahwa setiap orang punya caranya masing-masing untuk menunjukkan rasa sayang. Buat aku, merancang halaman ini barulah langkah kecil. Alasan sebenarnya di balik setiap baris kode dan kata-kata di sini cuma satu: aku ingin bikin kamu tersenyum.",
-      "Terima kasih ya, Valen, sudah jadi alasan aku untuk ingin terus tumbuh dan memberikan yang terbaik. Aku bersyukur banget bisa kenal dan berjalan sejauh ini sama kamu.",
-      "Dengan seluruh rasa yang ada,\nValle"
-    ]
+    "encrypted": {
+      "ct": "XPQOi4GMugImg9bB8tIKRZ+N/Z5EncarG5Y9x/ywueI9r0RPUfcCo7n2Z5MIudY7I+SK+wcPPyS5523QoJScIDK47i5Ftw5wDUc5o2G6wOtIBz7bT3RAgZdI03wuPmc2WCa4ew1gjljX5Ft9As0g4R7yZ/Ldf7eWvJ/WHQJEin4amUOYg9jO4YL4W5h2qTB84xN1b2zb/yNfOXncNWvq2Q9wC7VluOvHiwhwgQK2D3nO5/hOY428TJTarj1kw0d0jl10BJMjA+SYMBEUPWPmwEsD8D1FqzbrtjC/dxgf8D/k0VJBz8FxgAy1zdQKlkPZHy06hltbjd/jsaC0D72TI1JuB/0epknxaqbXL/4yxGc/NX6TwbMDCegpqbRvWzN9/OYrxjFr+ku54TDRToS82/kS1++Zc2pK4+RnAgc11RwS4S5NX97nRww36s3Ps47lLVrqWO+WQEoBEFJ6RzLfejHz89CIu3W6Hw8OE8wGcKDjLoI4H5pqFSFLkBPDtec82BecjtnA3K/M98Cy+jArD//KcSn1DR/Aa5+aH/sSpWNVy6BI9yqeAnX3AOol+H9Gtj9+CzIu4RKvcpLQd/H2iDhBlGTooHYjQcWrROHamVXEeipTfy2NPErLTysS9ebAmz/Jk90VqVEzCHtvVOiMYbGvPe/L15ATXxERpgaLHow0lwACX4BpAxfT6hVxDQmDYvgeoD96CGKvtqVwi4/wrjKjp+bG11vfmgegEJPNCBh6h+wnvBpnOpFzGzjZCXs2c6CwMXLwBhfpOxXmwarKeefIpwFztkHUNzRxZmNZBo/db30G/9duTF3YjAjwMeD7huwb9cc+uOE46K09Ql9ot2POYy/ZMz0bmpokbhZXidH4BE1ZWVZPt4iBHgdCsBnYjrSBEW1nR9YmJbKOLq9rUn5OrqM1Fi0F2P5rQHEArZ1aJFcG7ztCRoeIkIpSHLvQEvCYlx+twwURDdh3Zj3Vg4/pc9J6DHKVnA6Yzggdc+0fKGBkX9Z3g2OvPr7PjCMMbXb8FGt7ipGenFvKSnq8jTSzPToWFAfFyE6P8iTM0cy95Il96Wxz6OE3HMqkrWcI+TNbqamc5qfAY/Fy/AlMYYk6ffKospX4dF3Uj0LOAQFhDrNPUfI6DkMhEOloJOJ4oRerf5GfPHdUGASO4AhM81ZRGNUudKLTcmlSjyYplubr1El8wD7Sn4PENu67pUqE6505lMluVD+xlQMoJ7u1wLUN2Hg9IcpXEIosOj10bqoy+XXi/atUkrsGGeJ47YzFGTmj2E9ahr76ZJ2p7U5EsxlB3uHb5/rt8j9K25Makg7Vys4GiK9K8d9FKgYv89QZZYcufqhQ5Cjw9DlOBrrS2HTNY46tukCrIihZF3fhldLk7J70bWDt41VtoKqUeHFChlW71tsBHF4J2rEcE6su45nMIWG/pArDzSxtDjfAh7nQxtri7SQC/I1NVde2qYLheJWk3BK2ah6O8ZocpWexwMm1CWv3L3Qg35+6OujMzML20ZnXYekKP1jx+6QdvfV0/B1DWMbIchHI7+KNSQA0/bWW5UMdjXV3TQKJ66PqQzp/kjJqJdjmn+nl+6p095yjObllbnu4APrU7TEzt8Vg2yhWH1MN++zsmITqDzGsFmAoIwqppqVHScp0Cj03KqpRzI/F5wHcrZFYcs6Boj4Ye78t5YC6uE0xZEZYEeN1UgW21Ieekg7i5rH1Y52nVPoxeyFM6MGP128b0Nuahqg55HFIPfhXtcK+xi9q1Fz2lwIylkVIfLXvhn5dMoO1CCz1v2iBm5TNDLsMDxzv99bAU8BCcprzvFi/i3PcYgqg",
+      "iv": "TuFxCfMPOvT3AKUA",
+      "salt": "qruxwrwihhjHAfg+Sc8kyQ==",
+      "iter": 250000
+    }
   }
 ];
